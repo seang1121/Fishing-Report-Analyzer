@@ -1,8 +1,15 @@
 # 🎣 Mayport Fishing Report Analyzer
 
+![Python Version](https://img.shields.io/badge/python-3.7+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Maintenance](https://img.shields.io/badge/maintained-yes-brightgreen.svg)
+![Made with Love](https://img.shields.io/badge/made%20with-%E2%9D%A4-red.svg)
+
 **Comprehensive fishing report aggregator for Mayport, Jacksonville, FL**
 
 Automatically pulls and consolidates fishing conditions from 6 professional data sources to give you the complete picture before heading out.
+
+> 📖 **[See Example Output](EXAMPLE_OUTPUT.md)** - View what a complete fishing report looks like
 
 ---
 
@@ -42,6 +49,18 @@ Tide Schedule:
 High Tide: 06:45 AM (4.2 ft)
 Low Tide: 12:30 PM (0.8 ft)...
 ```
+
+## 📑 Table of Contents
+
+- [What Does This Do?](#-what-does-this-do)
+- [Quick Start](#-quick-start)
+- [Configuration](#-configuration)
+- [How It Works](#-how-it-works)
+- [Report Sections Explained](#-report-sections-explained)
+- [Usage Tips](#-usage-tips)
+- [Customization](#-customization)
+- [Troubleshooting](#-troubleshooting)
+- [License](#-license)
 
 ---
 
