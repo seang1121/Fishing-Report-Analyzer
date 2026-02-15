@@ -110,19 +110,50 @@ class FishingReportAnalyzer:
             return "Error parsing Tides4Fishing Mayport"
 
     def get_noaa_conditions(self):
-        """Source 5: NOAA Tide Station"""
-        soup = self.fetch_url(self.sources['noaa'])
+        """Source 5: NOAA Buoy Station MYPF1 (Mayport Bar Pilots Dock)"""
+        soup = self.fetch_url(self.sources['noaa_buoy'])
         if not soup:
-            return "Unable to fetch NOAA data"
+            return "Unable to fetch NOAA buoy data"
 
         try:
-            # Extract current conditions and water levels
-            current_conditions = soup.find('div', id='obs')
-            if current_conditions:
-                return current_conditions.get_text().strip()[:200]
-            return "No current conditions found"
-        except:
-            return "Error parsing NOAA data"
+            # Extract buoy measurements from the data table
+            result = []
+
+            # Find the meteorological data table
+            data_rows = soup.find_all('tr')
+
+            measurements = {}
+            for row in data_rows:
+                cells = row.find_all('td')
+                if len(cells) >= 2:
+                    label = cells[0].get_text().strip()
+                    value = cells[1].get_text().strip()
+
+                    # Collect key measurements
+                    if 'Wind Direction' in label or 'WDIR' in label:
+                        measurements['Wind Direction'] = value
+                    elif 'Wind Speed' in label and 'WSPD' in label and '10M' not in label and '20M' not in label:
+                        measurements['Wind Speed'] = value
+                    elif 'Wind Gust' in label or 'GST' in label:
+                        measurements['Wind Gust'] = value
+                    elif 'Atmospheric Pressure' in label or 'PRES' in label:
+                        measurements['Pressure'] = value
+                    elif 'Air Temperature' in label or 'ATMP' in label:
+                        measurements['Air Temp'] = value
+                    elif 'Water Temperature' in label or 'WTMP' in label:
+                        measurements['Water Temp'] = value
+
+            # Format the output
+            if measurements:
+                result.append("🌡️ Current Buoy Readings (MYPF1):")
+                for key, value in measurements.items():
+                    result.append(f"  • {key}: {value}")
+                return '\n'.join(result)
+            else:
+                return "Buoy data table found but no measurements extracted"
+
+        except Exception as e:
+            return f"Error parsing NOAA buoy data: {str(e)}"
 
     def get_tidetime_info(self):
         """Source 6: TideTime"""
@@ -172,8 +203,8 @@ class FishingReportAnalyzer:
         print(self.get_tides4fishing_mayport())
         print()
 
-        # Source 5: NOAA
-        print("🌐 NOAA STATION 8720218")
+        # Source 5: NOAA Buoy
+        print("🌐 NOAA BUOY MYPF1 (Mayport Bar Pilots Dock)")
         print("-" * 80)
         print(self.get_noaa_conditions())
         print()

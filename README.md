@@ -14,7 +14,7 @@ Generates a detailed fishing report by aggregating data from:
 2. **FishingBooker Atlantic Beach** - Current conditions and species activity
 3. **Tides4Fishing Atlantic Beach** - Solunar forecasts and tide predictions
 4. **Tides4Fishing Mayport Bar Pilots Dock** ⭐ *PRIMARY SOURCE* - Detailed fishing ratings, weather, and tides
-5. **NOAA Station 8720218** - Real-time water levels and conditions
+5. **NOAA Buoy MYPF1** - Live marine conditions (wind, water temp, air temp, pressure, gusts)
 6. **TideTime Mayport** - Comprehensive tide predictions
 
 ### Sample Output
@@ -122,7 +122,7 @@ Simply update the URLs in `config.json` to point to your preferred fishing area.
 | **FishingBooker** | Current conditions (water temp, clarity, wind) |
 | **Tides4Fishing Atlantic** | Solunar calendar (best fishing times) |
 | **Tides4Fishing Mayport** | Overall fishing rating + detailed tides |
-| **NOAA Station** | Real-time water levels and marine conditions |
+| **NOAA Buoy MYPF1** | Live marine data (wind speed/direction, water temp, air temp, pressure, gusts) |
 | **TideTime** | Precise tide predictions for planning |
 
 ---

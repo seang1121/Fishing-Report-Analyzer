@@ -9,7 +9,7 @@
     "fishingbooker": "https://fishingbooker.com/reports/destination/us/FL/atlantic-beach",
     "tides4fishing_atlantic": "https://tides4fishing.com/us/florida-east-coast/atlantic-beach",
     "tides4fishing_mayport": "https://tides4fishing.com/us/florida-east-coast/mayport-bar-pilots-dock",
-    "noaa": "https://tidesandcurrents.noaa.gov/stationhome.html?id=8720218",
+    "noaa_buoy": "https://www.ndbc.noaa.gov/station_page.php?station=mypf1",
     "tidetime": "https://www.tidetime.org/north-america/united-states/mayport.htm"
   },
   "scraping": {
