@@ -3,6 +3,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.7+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Maintenance](https://img.shields.io/badge/maintained-yes-brightgreen.svg)
+![GitHub tag](https://img.shields.io/github/v/tag/seang1121/Fishing-Report-Analyzer)
 ![Made with Love](https://img.shields.io/badge/made%20with-%E2%9D%A4-red.svg)
 
 **Comprehensive fishing report aggregator for Mayport, Jacksonville, FL**
