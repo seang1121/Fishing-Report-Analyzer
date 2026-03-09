@@ -28,3 +28,7 @@ Thumbs.db
 reports/
 *.txt
 *.html
+
+# Claude Code
+.claude/
+CLAUDE.local.md
