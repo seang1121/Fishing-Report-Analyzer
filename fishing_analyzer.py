@@ -80,6 +80,69 @@ STATION_PRODUCTS = {
 
 GO_LABELS = {75: "EXCELLENT", 55: "GOOD", 35: "FAIR", 0: "POOR"}
 
+BAIT_DB = {
+    "Redfish": {
+        "live":  ["live mud minnows", "live shrimp (popping cork)", "finger mullet"],
+        "cut":   ["cut mullet", "cut blue crab"],
+        "artificial": ["gold spoon", "Z-Man DieZel MinnowZ (root beer)", "Berkley Gulp shrimp (new penny)"],
+        "rig":   "Carolina rig — 1/0 circle hook, 20lb fluoro leader, 1/4oz egg sinker",
+    },
+    "Seatrout": {
+        "live":  ["live shrimp under popping cork", "live pigfish"],
+        "cut":   ["shrimp tipped jig"],
+        "artificial": ["MirrOlure MR-17 (chartreuse)", "DOA shrimp (glow)", "topwater She Dog (bone)"],
+        "rig":   "Popping cork rig — 1/0 circle hook, 20lb fluoro leader, 18\" dropper",
+    },
+    "Sheepshead": {
+        "live":  ["fiddler crabs", "live shrimp on jighead", "sand fleas"],
+        "cut":   ["oyster on half shell"],
+        "artificial": ["1/4oz jighead with Gulp crab (natural)"],
+        "rig":   "Knocker rig — 1/0 J-hook (small), 15lb fluoro, 1/4oz egg sinker tight to hook",
+    },
+    "Black Drum": {
+        "live":  ["live shrimp", "blue crab (quartered)", "fiddler crabs"],
+        "cut":   ["cut shrimp", "cut blue crab"],
+        "artificial": ["Berkley Gulp shrimp (natural)", "1/2oz bucktail jig (white)"],
+        "rig":   "Carolina rig — 3/0 circle hook, 20lb fluoro leader, 1/2oz egg sinker",
+    },
+    "Tarpon": {
+        "live":  ["live mullet (6-8\")", "live crab", "live threadfin herring"],
+        "cut":   [],
+        "artificial": ["DOA Baitbuster (silver)", "large swimbaits"],
+        "rig":   "Free-line or float rig — 7/0 circle hook, 60lb fluoro leader, no weight",
+    },
+    "Snook": {
+        "live":  ["live pilchards", "live shrimp", "finger mullet"],
+        "cut":   [],
+        "artificial": ["white Gulp jerkbait", "Rapala X-Rap (ghost)", "DOA CAL jig (rootbeer/chartreuse)"],
+        "rig":   "Free-line — 2/0 circle hook, 30lb fluoro leader, light or no weight",
+    },
+    "Spanish Mackerel": {
+        "live":  ["live shrimp (free-lined)", "small pilchards"],
+        "cut":   [],
+        "artificial": ["Gotcha plug (silver)", "1oz casting spoon (silver)", "Clark spoon (trolling)"],
+        "rig":   "Long shank hook or wire leader — #1 treble, 20lb wire, 1/2oz casting weight",
+    },
+    "Flounder": {
+        "live":  ["live mud minnows", "live finger mullet", "live shrimp"],
+        "cut":   ["cut mullet strip"],
+        "artificial": ["Berkley Gulp (pink/white) on jighead", "white bucktail jig"],
+        "rig":   "Jighead rig — 2/0 wide-gap hook, 1/4oz jighead, 20lb fluoro, drag bottom slowly",
+    },
+    "Bluefish": {
+        "live":  ["live mullet", "live shrimp"],
+        "cut":   ["cut mullet", "cut menhaden"],
+        "artificial": ["Gotcha plug (chrome)", "spoon (silver)", "topwater popper"],
+        "rig":   "Wire leader required — #2 treble or 3/0 J-hook, 20lb wire leader",
+    },
+    "Cobia": {
+        "live":  ["live eel", "live pinfish", "live blue crab"],
+        "cut":   [],
+        "artificial": ["large bucktail jig (brown/orange)", "DOA Baitbuster"],
+        "rig":   "Sight-cast rig — 5/0 circle hook, 40lb fluoro leader, free-line or light jighead",
+    },
+}
+
 
 def _fetch_json(url: str, timeout: int = 10):
     req = Request(url, headers={"User-Agent": "JaxICWAnalyzer/1.0"})
@@ -176,7 +239,6 @@ class JaxICWAnalyzer:
     def fetch_all(self):
         fns = [
             lambda: self._fetch_tides("8720218", "tides_mayport"),
-            lambda: self._fetch_tides("8720267", "tides_stjohns"),
             lambda: self._fetch_coops_conditions("8720218", "buoy_mayport"),
             lambda: self._fetch_coops_conditions("8720219", "buoy_dames"),
             self._fetch_pressure_trend,
@@ -362,8 +424,7 @@ class JaxICWAnalyzer:
 
     def print_tides(self):
         print(f"\n--- TIDES {'—'*68}")
-        for label, key in [("Mayport (8720218)", "tides_mayport"),
-                           ("St Johns (8720267)", "tides_stjohns")]:
+        for label, key in [("Mayport (8720218)", "tides_mayport")]:
             preds = self.data.get(key, {}).get("predictions", [])
             if not preds:
                 print(f"  {label}: [UNAVAILABLE]")
@@ -482,6 +543,178 @@ class JaxICWAnalyzer:
         for k, v in factors.items():
             print(f"    {k:<15s} {v:>3d} pts")
 
+    def _get_top_species(self):
+        """Return list of (name, score) for active species, sorted by score desc."""
+        season = SEASONAL.get(self.month, {})
+        active = set(season.get("hot", []) + season.get("good", []))
+        results = []
+        for name in SPECIES_PREFS:
+            if name in active or self.month in SPECIES_PREFS[name]["months"]:
+                results.append((name, self.score_species(name)))
+        return sorted(results, key=lambda x: x[1], reverse=True)
+
+    def _get_solunar_windows_minutes(self):
+        """Return list of (start_min, end_min, label) for all solunar windows."""
+        sol = self.data.get("solunar", {})
+        windows = []
+        for label, sk, ek in [
+            ("Major", "major1Start", "major1Stop"),
+            ("Major", "major2Start", "major2Stop"),
+            ("Minor", "minor1Start", "minor1Stop"),
+            ("Minor", "minor2Start", "minor2Stop"),
+        ]:
+            start_str = sol.get(sk, "")
+            stop_str = sol.get(ek, "")
+            if not start_str or not stop_str:
+                continue
+            try:
+                sh, sm = map(int, start_str.split(":"))
+                eh, em = map(int, stop_str.split(":"))
+                windows.append((sh * 60 + sm, eh * 60 + em, label))
+            except ValueError:
+                continue
+        return windows
+
+    def _get_dawn_dusk_minutes(self):
+        """Return (dawn_min, dusk_min) as minutes from midnight, or (None, None)."""
+        sun = self.data.get("sun", {}).get("results", {})
+        dawn = dusk = None
+        for key, target in [("civil_twilight_begin", "dawn"), ("civil_twilight_end", "dusk")]:
+            if sun.get(key):
+                try:
+                    t = datetime.fromisoformat(sun[key]).astimezone(TZ)
+                    val = t.hour * 60 + t.minute
+                    if target == "dawn":
+                        dawn = val
+                    else:
+                        dusk = val
+                except Exception:
+                    pass
+        return dawn, dusk
+
+    def _get_tide_transitions_minutes(self):
+        """Return list of (minute_of_day, type) for tide transitions today."""
+        preds = self.data.get("tides_mayport", {}).get("predictions", [])
+        today_str = self.now.strftime("%Y-%m-%d")
+        transitions = []
+        for p in preds:
+            if p["t"].startswith(today_str):
+                try:
+                    t = datetime.strptime(p["t"], "%Y-%m-%d %H:%M")
+                    transitions.append((t.hour * 60 + t.minute, "H" if p["type"] == "H" else "L"))
+                except ValueError:
+                    pass
+        return transitions
+
+    def _compute_best_time(self):
+        """Find the best time to be on the water — overlap of solunar + tide transition + low-light."""
+        dawn, dusk = self._get_dawn_dusk_minutes()
+        sol_windows = self._get_solunar_windows_minutes()
+        tide_times = self._get_tide_transitions_minutes()
+
+        # Score each hour of the day
+        best_hour = None
+        best_score = -1
+        for h in range(4, 22):  # 4am to 9pm
+            hm = h * 60 + 30  # midpoint of hour
+            score = 0
+            # Low-light bonus (within 90min of dawn/dusk)
+            if dawn and abs(hm - dawn) <= 90:
+                score += 3
+            if dusk and abs(hm - dusk) <= 90:
+                score += 3
+            # Solunar window bonus
+            for s_start, s_end, s_label in sol_windows:
+                if s_start - 30 <= hm <= s_end + 30:
+                    score += 4 if s_label == "Major" else 2
+            # Tide transition bonus (within 60min)
+            for t_min, _ in tide_times:
+                if abs(hm - t_min) <= 60:
+                    score += 3
+            if score > best_score:
+                best_score = score
+                best_hour = h
+        return best_hour, best_score
+
+    def print_bait(self):
+        print(f"\n--- BAIT & RIGS {'—'*63}")
+        top = self._get_top_species()[:3]
+        if not top:
+            print("  [NO SPECIES DATA]")
+            return
+        for name, score in top:
+            bait = BAIT_DB.get(name)
+            if not bait:
+                continue
+            season = SEASONAL.get(self.month, {})
+            tag = "HOT" if name in season.get("hot", []) else "   "
+            print(f"  [{tag}] {name} ({score}/100)")
+            if bait["live"]:
+                print(f"    Live:       {', '.join(bait['live'][:3])}")
+            if bait["cut"]:
+                print(f"    Cut:        {', '.join(bait['cut'][:2])}")
+            if bait["artificial"]:
+                print(f"    Artificial: {', '.join(bait['artificial'][:3])}")
+            print(f"    Rig:        {bait['rig']}")
+
+    def print_best_time(self):
+        print(f"\n--- BE ON THE WATER BY {'—'*56}")
+        best_hour, best_score = self._compute_best_time()
+        if best_hour is None:
+            print("  [INSUFFICIENT DATA]")
+            return
+        t = datetime(self.now.year, self.now.month, self.now.day, best_hour, 0, tzinfo=TZ)
+        arrive = t - timedelta(minutes=30)
+        print(f"  Target: {t.strftime('%I:%M %p')} (arrive by {arrive.strftime('%I:%M %p')})")
+        reasons = []
+        dawn, dusk = self._get_dawn_dusk_minutes()
+        hm = best_hour * 60 + 30
+        if dawn and abs(hm - dawn) <= 90:
+            reasons.append("low-light (dawn)")
+        if dusk and abs(hm - dusk) <= 90:
+            reasons.append("low-light (dusk)")
+        for s_start, s_end, s_label in self._get_solunar_windows_minutes():
+            if s_start - 30 <= hm <= s_end + 30:
+                reasons.append(f"solunar {s_label.lower()}")
+                break
+        for t_min, t_type in self._get_tide_transitions_minutes():
+            if abs(hm - t_min) <= 60:
+                reasons.append(f"tide transition ({'high' if t_type == 'H' else 'low'})")
+                break
+        if reasons:
+            print(f"  Why:    {' + '.join(reasons)}")
+        else:
+            print(f"  Why:    best available conditions window")
+
+    def print_bite_timeline(self):
+        print(f"\n--- BITE PROBABILITY {'—'*58}")
+        dawn, dusk = self._get_dawn_dusk_minutes()
+        sol_windows = self._get_solunar_windows_minutes()
+        tide_times = self._get_tide_transitions_minutes()
+        hours = list(range(5, 21))  # 5am to 8pm
+        scores = []
+        for h in hours:
+            hm = h * 60 + 30
+            score = 1  # baseline
+            if dawn and abs(hm - dawn) <= 90:
+                score += 3
+            if dusk and abs(hm - dusk) <= 90:
+                score += 3
+            for s_start, s_end, s_label in sol_windows:
+                if s_start - 30 <= hm <= s_end + 30:
+                    score += 4 if s_label == "Major" else 2
+            for t_min, _ in tide_times:
+                if abs(hm - t_min) <= 60:
+                    score += 3
+            scores.append(min(score, 10))
+        max_score = max(scores) if scores else 1
+        labels = {10: "FIRE", 7: "HOT", 4: "GOOD", 1: "slow"}
+        for h, s in zip(hours, scores):
+            bar = "#" * (s * 3)
+            tag = next(v for k, v in sorted(labels.items(), reverse=True) if s >= k)
+            t = datetime(self.now.year, self.now.month, self.now.day, h, 0, tzinfo=TZ)
+            print(f"  {t.strftime('%I %p'):<6s} {bar:<30s} {tag}")
+
     # ── JSON output ─────────────────────────────────────────────────
 
     def build_json(self):
@@ -496,12 +729,12 @@ class JaxICWAnalyzer:
                     "hot": name in season.get("hot", []),
                 }
         total, factors = self.go_no_go()
+        best_hour, _ = self._compute_best_time()
         return {
             "generated": self.now.isoformat(),
             "location": {"lat": LAT, "lon": LON},
             "tides": {
                 "mayport": self.data.get("tides_mayport", {}),
-                "stjohns": self.data.get("tides_stjohns", {}),
                 "direction": self._get_tide_direction(),
             },
             "solunar": self.data.get("solunar", {}),
@@ -516,6 +749,14 @@ class JaxICWAnalyzer:
                 {"name": sp["name"], "score": self.score_spot(sp), "why": sp["why"]}
                 for sp in ranked_spots
             ],
+            "bait": {
+                name: BAIT_DB[name] for name, _ in self._get_top_species()[:3]
+                if name in BAIT_DB
+            },
+            "best_time": {
+                "hour": best_hour,
+                "arrive_by": f"{best_hour - 1 if best_hour else 0}:30" if best_hour else None,
+            },
             "go_no_go": {"total": total, "label": next(
                 v for k, v in sorted(GO_LABELS.items(), reverse=True) if total >= k
             ), "factors": factors},
@@ -526,7 +767,7 @@ class JaxICWAnalyzer:
     def run(self):
         if not self.json_mode:
             self.print_header()
-            print("\nFetching live data from 8 sources...")
+            print("\nFetching live data from 7 sources...")
         self.fetch_all()
         if self.json_mode:
             print(json.dumps(self.build_json(), indent=2, default=str))
@@ -537,7 +778,10 @@ class JaxICWAnalyzer:
             self.print_weather()
             self.print_species()
             self.print_spots()
+            self.print_bait()
             self.print_windows()
+            self.print_best_time()
+            self.print_bite_timeline()
             self.print_go_no_go()
             print(f"\n{'='*80}\n  Report complete.\n{'='*80}\n")
 

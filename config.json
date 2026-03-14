@@ -7,7 +7,6 @@
   },
   "stations": {
     "tide_primary": {"id": "8720218", "name": "Mayport (Bar Pilots Dock)"},
-    "tide_secondary": {"id": "8720267", "name": "St Johns Entrance"},
     "conditions_primary": {"id": "8720218", "name": "Mayport", "products": ["wind", "water_temperature", "air_temperature", "air_pressure"]},
     "conditions_secondary": {"id": "8720219", "name": "Dames Point", "products": ["water_temperature"]}
   },

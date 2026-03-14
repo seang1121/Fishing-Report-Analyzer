@@ -2,7 +2,7 @@
 
 **Multi-spot, multi-factor fishing analysis for Jacksonville's Intracoastal Waterway.**
 
-Fetches live data from 8 free APIs in parallel, scores 9 ICW spots and seasonal species, and generates a full report with pressure trends, solunar proximity, and a Go/No-Go verdict. Zero external dependencies — pure Python stdlib.
+Fetches live data from 7 free APIs in parallel, scores 9 ICW spots and seasonal species, and generates a full report with bait recommendations, bite timeline, pressure trends, solunar proximity, and a Go/No-Go verdict. Zero external dependencies — pure Python stdlib.
 
 > **[See Example Output](EXAMPLE_OUTPUT.md)**
 
@@ -28,12 +28,12 @@ Pipe to Discord bots, dashboards, or anything that reads JSON.
 
 ---
 
-## Data Sources (8 APIs, all free)
+## Data Sources (7 APIs, all free)
+
 
 | Source | Endpoint | Data |
 |--------|----------|------|
 | NOAA CO-OPS | Station 8720218 | Tide predictions (Mayport) |
-| NOAA CO-OPS | Station 8720267 | Tide predictions (St Johns Entrance) |
 | NOAA CO-OPS | Station 8720218 | Wind, water temp, air temp, pressure (Mayport) |
 | NOAA CO-OPS | Station 8720219 | Water temp (Dames Point, upriver) |
 | NOAA CO-OPS | Station 8720218 (6hr) | Pressure trend (Rising/Falling/Steady) |
@@ -61,14 +61,17 @@ Pipe to Discord bots, dashboards, or anything that reads JSON.
 
 ## Report Sections
 
-1. **Tides** — Hi/lo times + heights for 2 stations, rising/falling status
+1. **Tides** — Hi/lo times + heights for Mayport, rising/falling status
 2. **Moon & Solunar** — Phase, illumination, major/minor feeding windows, proximity countdown
 3. **Conditions** — Multi-station: water temp, air temp, wind, pressure + 6hr pressure trend
 4. **Weather Forecast** — NWS forecast for today + tonight (JAX gridpoint)
 5. **Species Outlook** — Season-aware scoring (temp + tide + pressure trend + solunar proximity + moon)
 6. **All Spots Ranked** — All 9 spots scored with one-line reasoning
-7. **Best Windows** — Dawn/dusk + solunar peaks + next tide transition
-8. **Go/No-Go** — 100-point score with factor breakdown
+7. **Bait & Rigs** — Top 3 species with live bait, cut bait, artificials, and rig setup
+8. **Best Windows** — Dawn/dusk + solunar peaks + next tide transition
+9. **Be On The Water By** — Single recommended arrival time based on factor overlap
+10. **Bite Probability** — Hour-by-hour timeline showing when conditions stack up
+11. **Go/No-Go** — 100-point score with factor breakdown
 
 ---
 
