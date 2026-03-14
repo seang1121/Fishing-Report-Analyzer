@@ -615,7 +615,7 @@ class JaxICWAnalyzer:
         # Score each hour of the day
         best_hour = None
         best_score = -1
-        for h in range(4, 22):  # 4am to 9pm
+        for h in range(0, 24):
             hm = h * 60 + 30  # midpoint of hour
             score = 0
             # Low-light bonus (within 90min of dawn/dusk)
@@ -691,7 +691,7 @@ class JaxICWAnalyzer:
         dawn, dusk = self._get_dawn_dusk_minutes()
         sol_windows = self._get_solunar_windows_minutes()
         tide_times = self._get_tide_transitions_minutes()
-        hours = list(range(5, 21))  # 5am to 8pm
+        hours = list(range(0, 24))  # full 24 hours
         scores = []
         for h in hours:
             hm = h * 60 + 30
