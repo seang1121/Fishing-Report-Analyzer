@@ -1,20 +1,22 @@
 {
   "location": {
-    "name": "Mayport, Jacksonville, FL",
-    "coordinates": "30.3919° N, 81.4292° W",
-    "timezone": "EST"
+    "name": "Jacksonville ICW, FL",
+    "lat": 30.3919,
+    "lon": -81.4292,
+    "timezone": "America/New_York"
   },
+  "stations": {
+    "tide_primary": {"id": "8720218", "name": "Mayport (Bar Pilots Dock)"},
+    "tide_secondary": {"id": "8720267", "name": "St Johns Entrance"},
+    "conditions_primary": {"id": "8720218", "name": "Mayport", "products": ["wind", "water_temperature", "air_temperature", "air_pressure"]},
+    "conditions_secondary": {"id": "8720219", "name": "Dames Point", "products": ["water_temperature"]}
+  },
+  "nws_gridpoint": "JAX/73,64",
   "data_sources": {
-    "proangler": "https://proangler.us/fishingreport/jacksonville-fishing-report/",
-    "fishingbooker": "https://fishingbooker.com/reports/destination/us/FL/atlantic-beach",
-    "tides4fishing_atlantic": "https://tides4fishing.com/us/florida-east-coast/atlantic-beach",
-    "tides4fishing_mayport": "https://tides4fishing.com/us/florida-east-coast/mayport-bar-pilots-dock",
-    "noaa_buoy": "https://www.ndbc.noaa.gov/station_page.php?station=mypf1",
-    "tidetime": "https://www.tidetime.org/north-america/united-states/mayport.htm"
+    "noaa_coops": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",
+    "solunar": "https://api.solunar.org/solunar/{lat},{lon},{date},{tz}",
+    "sunrise_sunset": "https://api.sunrise-sunset.org/json",
+    "nws_forecast": "https://api.weather.gov/gridpoints/{gridpoint}/forecast"
   },
-  "scraping": {
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    "delay_seconds": 1,
-    "timeout_seconds": 10
-  }
+  "notes": "All sources are free public APIs. No API keys required. Station products define which CO-OPS data products each station supports to avoid wasted API calls."
 }

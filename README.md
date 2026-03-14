@@ -1,89 +1,104 @@
-# Fishing Report Analyzer
+# Jacksonville ICW Fishing Report Analyzer
 
-**Aggregates fishing conditions from 6 data sources for Mayport, Jacksonville FL.**
+**Multi-spot, multi-factor fishing analysis for Jacksonville's Intracoastal Waterway.**
 
-Scrapes real-time data from ProAngler, FishingBooker, Tides4Fishing, NOAA, and TideTime — consolidates everything into one report so you know what's biting before you head out.
+Fetches live data from 8 free APIs in parallel, scores 9 ICW spots and seasonal species, and generates a full report with pressure trends, solunar proximity, and a Go/No-Go verdict. Zero external dependencies — pure Python stdlib.
+
+> **[See Example Output](EXAMPLE_OUTPUT.md)**
+
+---
 
 ## Quick Start
 
 ```bash
 git clone https://github.com/seang1121/Fishing-Report-Analyzer.git
 cd Fishing-Report-Analyzer
-pip install -r requirements.txt
 python fishing_analyzer.py
 ```
 
-## Data Sources
+No API keys required. No pip install needed. Report generates in <10 seconds.
 
-| Source | Data |
-|--------|------|
-| ProAngler Jacksonville | Recent catches, species activity, hot spots |
-| FishingBooker Atlantic Beach | Water temp, clarity, wind, species |
-| Tides4Fishing Atlantic Beach | Solunar forecast, best fishing windows |
-| **Tides4Fishing Mayport** (primary) | Fishing rating, weather, full tide schedule |
-| NOAA Buoy MYPF1 | Live wind, water temp, air temp, pressure, gusts |
-| TideTime Mayport | Tide predictions |
+### JSON Output
 
-## Example Output
-
+```bash
+python fishing_analyzer.py --json
 ```
-================================================================================
-MAYPORT FISHING REPORT - Mayport, Jacksonville, FL
-30.3919 N, 81.4292 W
-Generated: 2026-03-14 06:15 AM
-================================================================================
 
-PROANGLER JACKSONVILLE
---------------------------------------------------------------------------------
-Inshore fishing strong — redfish and trout active in the creeks around Mayport.
-Water temps low 60s, fish responding to live shrimp and soft plastics.
-Best action on incoming tides early morning.
+Pipe to Discord bots, dashboards, or anything that reads JSON.
 
-TIDES4FISHING - Mayport Bar Pilots Dock (PRIMARY)
---------------------------------------------------------------------------------
-Fishing Rating: 82% (Very Good)
-Weather: Partly Cloudy, 68F, Wind SE 12mph, Humidity 65%
-High Tide: 06:45 AM (4.2 ft)
-Low Tide: 12:30 PM (0.8 ft)
-High Tide: 07:15 PM (4.5 ft)
+---
 
-NOAA BUOY MYPF1
---------------------------------------------------------------------------------
-Wind Direction: SSE (150)
-Wind Speed: 5.1 knots
-Wind Gust: 9.9 knots
-Pressure: 30.09 in
-Air Temp: 61.9F
-Water Temp: 56.5F
+## Data Sources (8 APIs, all free)
 
-================================================================================
-Report complete.
-================================================================================
-```
+| Source | Endpoint | Data |
+|--------|----------|------|
+| NOAA CO-OPS | Station 8720218 | Tide predictions (Mayport) |
+| NOAA CO-OPS | Station 8720267 | Tide predictions (St Johns Entrance) |
+| NOAA CO-OPS | Station 8720218 | Wind, water temp, air temp, pressure (Mayport) |
+| NOAA CO-OPS | Station 8720219 | Water temp (Dames Point, upriver) |
+| NOAA CO-OPS | Station 8720218 (6hr) | Pressure trend (Rising/Falling/Steady) |
+| Solunar API | api.solunar.org | Major/minor feeding windows, moon phase |
+| Sunrise-Sunset | api.sunrise-sunset.org | Dawn/dusk/twilight times |
+| NWS Forecast | api.weather.gov gridpoint | Wind/temp weather forecast (JAX) |
+
+---
+
+## 9 ICW Spots Ranked
+
+| Spot | Wind Tolerance | Best Tide | Key Feature |
+|------|---------------|-----------|-------------|
+| Sisters Creek | 25 kts | Rising | Protected bends, oyster bars |
+| Pablo Creek | 25 kts | Falling | Finger creek choke points |
+| Nassau Sound / Ft George | 15 kts | Any | Tarpon summer, drum winter |
+| Mayport Inlet / Jetties | 20 kts | Any | Deep water + jetty structure |
+| St Johns Confluence | 20 kts | Rising | Salinity break, fish stack |
+| Dutton Island Preserve | 25 kts | Falling | Sheltered flats, kayak-friendly |
+| Guana River / GTM Reserve | 25 kts | Rising | Pristine sight-casting flats |
+| Ft George Island Bridges | 20 kts | Any | Bridge pilings, current breaks |
+| Amelia Island / Nassau River | 20 kts | Rising | Backwater creeks, less pressure |
+
+---
+
+## Report Sections
+
+1. **Tides** — Hi/lo times + heights for 2 stations, rising/falling status
+2. **Moon & Solunar** — Phase, illumination, major/minor feeding windows, proximity countdown
+3. **Conditions** — Multi-station: water temp, air temp, wind, pressure + 6hr pressure trend
+4. **Weather Forecast** — NWS forecast for today + tonight (JAX gridpoint)
+5. **Species Outlook** — Season-aware scoring (temp + tide + pressure trend + solunar proximity + moon)
+6. **All Spots Ranked** — All 9 spots scored with one-line reasoning
+7. **Best Windows** — Dawn/dusk + solunar peaks + next tide transition
+8. **Go/No-Go** — 100-point score with factor breakdown
+
+---
+
+## Go/No-Go (100 pts)
+
+| Factor | Max Points |
+|--------|-----------|
+| Wind | 25 |
+| Water Temp | 20 |
+| Tide Movement | 15 |
+| Pressure Trend | 15 |
+| Solunar | 15 |
+| Moon Phase | 10 |
+
+75+: EXCELLENT | 55-74: GOOD | 35-54: FAIR | 0-34: POOR
+
+---
 
 ## Configuration
 
-Edit `config.json` to change location or data source URLs:
+Edit `config.json` to customize station IDs, products per station, and NWS gridpoint without touching Python code.
 
-```json
-{
-  "location": {
-    "name": "Mayport, Jacksonville, FL",
-    "coordinates": "30.3919 N, 81.4292 W"
-  },
-  "data_sources": {
-    "proangler": "https://proangler.us/fishingreport/jacksonville-fishing-report/",
-    "tides4fishing_mayport": "https://tides4fishing.com/us/florida-east-coast/mayport-bar-pilots-dock",
-    "noaa_buoy": "https://www.ndbc.noaa.gov/station_page.php?station=mypf1"
-  }
-}
-```
+---
 
-## Requirements
+## Seasonal Knowledge
 
-- Python 3.7+
-- `requests`, `beautifulsoup4`, `lxml`
+Species intelligence encoded from local charter captains (Catching Fire Charters), Florida Sportsman NE FL forecasts, CyberAngler ICW reports, Salt Strong, and FishingBooker Jacksonville guides.
+
+---
 
 ## License
 
-MIT
+MIT License
