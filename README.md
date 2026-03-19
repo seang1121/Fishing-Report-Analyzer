@@ -1,13 +1,42 @@
 # Jacksonville ICW Fishing Report Analyzer
 
-![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+**Multi-spot, multi-factor fishing intelligence for Jacksonville's Intracoastal Waterway.**
 
-**Multi-spot, multi-factor fishing analysis for Jacksonville's Intracoastal Waterway.**
+[![Status: Active](https://img.shields.io/badge/status-active-green.svg)]()
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-blue.svg)]()
 
-Fetches live data from 8 free APIs in parallel, scores 9 ICW spots and seasonal species, and generates a full report with pressure trends, solunar proximity, and a Go/No-Go verdict. Zero external dependencies — pure Python stdlib.
+---
 
-> **[See Example Output](EXAMPLE_OUTPUT.md)**
+## What It Does
+
+Fetches live data from 8 free APIs in parallel, scores 9 ICW fishing spots and 10 seasonal species, and generates a comprehensive report with pressure trends, solunar proximity, and a 100-point Go/No-Go verdict. Zero external dependencies -- pure Python stdlib using `urllib`, `json`, and `concurrent.futures`.
+
+---
+
+## Features
+
+- **8 Parallel API Calls** -- NOAA CO-OPS tides, wind, water temp, air temp, pressure; Solunar feeding windows; Sunrise-Sunset times; NWS weather forecast
+- **9 ICW Spot Rankings** -- Each spot scored by wind tolerance, optimal tide, and structure type
+- **10 Species Scoring** -- Season-aware species outlook factoring water temp, tide direction, pressure trend, solunar proximity, and moon phase
+- **100-Point Go/No-Go Verdict** -- Wind (25), water temp (20), tide movement (15), pressure trend (15), solunar (15), moon phase (10)
+- **Pressure Trend Analysis** -- 6-hour barometric pressure trend (rising/falling/steady)
+- **Solunar Proximity Countdown** -- Minutes to next major/minor feeding window
+- **Best Windows** -- Dawn/dusk + solunar peaks + next tide transition
+- **JSON Output Mode** -- Pipe to Discord bots, dashboards, or downstream tools
+- **Configurable Stations** -- Edit `config.json` to customize NOAA stations and NWS gridpoint
+
+---
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Language | Python 3.10+ (stdlib only) |
+| HTTP | `urllib.request` |
+| Concurrency | `concurrent.futures.ThreadPoolExecutor` |
+| Data Sources | NOAA CO-OPS, NWS, Solunar API, Sunrise-Sunset API |
 
 ---
 
@@ -19,7 +48,7 @@ cd Fishing-Report-Analyzer
 python fishing_analyzer.py
 ```
 
-No API keys required. No pip install needed. Report generates in <10 seconds.
+No API keys required. No `pip install` needed. Report generates in under 10 seconds.
 
 ### JSON Output
 
@@ -27,55 +56,39 @@ No API keys required. No pip install needed. Report generates in <10 seconds.
 python fishing_analyzer.py --json
 ```
 
-Pipe to Discord bots, dashboards, or anything that reads JSON.
-
 ---
 
 ## Data Sources (8 APIs, all free)
 
-| Source | Endpoint | Data |
-|--------|----------|------|
-| NOAA CO-OPS | Station 8720218 | Tide predictions (Mayport) |
-| NOAA CO-OPS | Station 8720267 | Tide predictions (St Johns Entrance) |
-| NOAA CO-OPS | Station 8720218 | Wind, water temp, air temp, pressure (Mayport) |
-| NOAA CO-OPS | Station 8720219 | Water temp (Dames Point, upriver) |
-| NOAA CO-OPS | Station 8720218 (6hr) | Pressure trend (Rising/Falling/Steady) |
-| Solunar API | api.solunar.org | Major/minor feeding windows, moon phase |
-| Sunrise-Sunset | api.sunrise-sunset.org | Dawn/dusk/twilight times |
-| NWS Forecast | api.weather.gov gridpoint | Wind/temp weather forecast (JAX) |
+| Source | Data |
+|--------|------|
+| NOAA CO-OPS (Mayport) | Tide predictions, wind, water temp, air temp, pressure |
+| NOAA CO-OPS (St Johns Entrance) | Tide predictions |
+| NOAA CO-OPS (Dames Point) | Upriver water temp |
+| NOAA CO-OPS (6hr history) | Barometric pressure trend |
+| Solunar API | Major/minor feeding windows, moon phase |
+| Sunrise-Sunset API | Dawn, dusk, twilight times |
+| NWS Forecast | Wind and temperature forecast |
 
 ---
 
-## 9 ICW Spots Ranked
+## 9 ICW Spots
 
-| Spot | Wind Tolerance | Best Tide | Key Feature |
-|------|---------------|-----------|-------------|
-| Sisters Creek | 25 kts | Rising | Protected bends, oyster bars |
-| Pablo Creek | 25 kts | Falling | Finger creek choke points |
-| Nassau Sound / Ft George | 15 kts | Any | Tarpon summer, drum winter |
-| Mayport Inlet / Jetties | 20 kts | Any | Deep water + jetty structure |
-| St Johns Confluence | 20 kts | Rising | Salinity break, fish stack |
-| Dutton Island Preserve | 25 kts | Falling | Sheltered flats, kayak-friendly |
-| Guana River / GTM Reserve | 25 kts | Rising | Pristine sight-casting flats |
-| Ft George Island Bridges | 20 kts | Any | Bridge pilings, current breaks |
-| Amelia Island / Nassau River | 20 kts | Rising | Backwater creeks, less pressure |
-
----
-
-## Report Sections
-
-1. **Tides** — Hi/lo times + heights for 2 stations, rising/falling status
-2. **Moon & Solunar** — Phase, illumination, major/minor feeding windows, proximity countdown
-3. **Conditions** — Multi-station: water temp, air temp, wind, pressure + 6hr pressure trend
-4. **Weather Forecast** — NWS forecast for today + tonight (JAX gridpoint)
-5. **Species Outlook** — Season-aware scoring (temp + tide + pressure trend + solunar proximity + moon)
-6. **All Spots Ranked** — All 9 spots scored with one-line reasoning
-7. **Best Windows** — Dawn/dusk + solunar peaks + next tide transition
-8. **Go/No-Go** — 100-point score with factor breakdown
+| Spot | Wind Tolerance | Best Tide |
+|------|---------------|-----------|
+| Sisters Creek | 25 kts | Rising |
+| Pablo Creek | 25 kts | Falling |
+| Nassau Sound / Ft George | 15 kts | Any |
+| Mayport Inlet / Jetties | 20 kts | Any |
+| St Johns Confluence | 20 kts | Rising |
+| Dutton Island Preserve | 25 kts | Falling |
+| Guana River / GTM Reserve | 25 kts | Rising |
+| Ft George Island Bridges | 20 kts | Any |
+| Amelia Island / Nassau River | 20 kts | Rising |
 
 ---
 
-## Go/No-Go (100 pts)
+## Go/No-Go Scoring (100 pts)
 
 | Factor | Max Points |
 |--------|-----------|
@@ -86,24 +99,12 @@ Pipe to Discord bots, dashboards, or anything that reads JSON.
 | Solunar | 15 |
 | Moon Phase | 10 |
 
-75+: EXCELLENT | 55-74: GOOD | 35-54: FAIR | 0-34: POOR
+**75+**: EXCELLENT | **55-74**: GOOD | **35-54**: FAIR | **0-34**: POOR
 
----
-
-## Configuration
-
-Edit `config.json` to customize station IDs, products per station, and NWS gridpoint without touching Python code.
-
----
-
-## Seasonal Knowledge
-
-Species intelligence encoded from local charter captains (Catching Fire Charters), Florida Sportsman NE FL forecasts, CyberAngler ICW reports, Salt Strong, and FishingBooker Jacksonville guides.
+> **[See Example Output](EXAMPLE_OUTPUT.md)**
 
 ---
 
 ## License
 
 MIT License
-
-*Last updated: March 2026*
